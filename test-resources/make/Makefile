@@ -1,3 +1,3 @@
-NAME := semver-release-version
-ORG := rawlingsj
-VERSION := 1.2.0-SNAPSHOT
+NAME := new-release-version
+ORG := trendmicro
+VERSION := 99.0.0-SNAPSHOT

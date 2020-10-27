@@ -1,15 +1,15 @@
-module github.com/jenkins-x/jx-release-version
+module github.com/trendmicro/new-release-version
 
-go 1.12
+go 1.15
 
 require (
-	github.com/coreos/go-semver v0.2.0
-	github.com/golang/protobuf v0.0.0-20161109072736-4bd1920723d7
-	github.com/google/go-github v0.0.0-20171108000855-8c08f4fba5e0
-	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
-	github.com/hashicorp/go-version v0.0.0-20170914154128-fc61389e27c7
+	github.com/coreos/go-semver v0.3.0
+	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/google/go-github/v32 v32.1.0
+	github.com/hashicorp/go-version v1.2.1
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20170809000501-1c05540f6879
-	golang.org/x/oauth2 v0.0.0-20170412232759-a6bd8cefa181
-	google.golang.org/appengine v0.0.0-20171031194329-9d8544a6b2c7
+	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
+	golang.org/x/net v0.0.0-20201027133719-8eef5233e2a1 // indirect
+	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	google.golang.org/appengine v1.6.7 // indirect
 )

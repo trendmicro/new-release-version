@@ -3,11 +3,12 @@ package adapters
 import (
 	"context"
 	"fmt"
-	"github.com/google/go-github/github"
-	"github.com/jenkins-x/jx-release-version/domain"
-	"golang.org/x/oauth2"
 	"net/http"
 	"os"
+
+	"github.com/google/go-github/v32/github"
+	"github.com/trendmicro/new-release-version/domain"
+	"golang.org/x/oauth2"
 )
 
 type GitHubClient struct {

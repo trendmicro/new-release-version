@@ -4,93 +4,85 @@ import (
 	"context"
 	"testing"
 
-	"github.com/jenkins-x/jx-release-version/adapters"
-	"github.com/jenkins-x/jx-release-version/domain"
-	"github.com/jenkins-x/jx-release-version/mocks"
-
 	"github.com/stretchr/testify/assert"
+	"github.com/trendmicro/new-release-version/adapters"
+	"github.com/trendmicro/new-release-version/domain"
+	"github.com/trendmicro/new-release-version/mocks"
 )
 
-func TestMakefile(t *testing.T) {
-	c := config{
-		dir: "test-resources/make",
+func TestVersionsGradle(t *testing.T) {
+	r := NewRelVer{
+		dir: "test-resources/java/versions.gradle",
 	}
-
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "1.2.0-SNAPSHOT", v, "error with getVersion for a Makefile")
+	assert.Equal(t, "1.2.3", v, "error with getVersion for a versions.gradle")
 }
 
-func TestAutomakefile(t *testing.T) {
-	c := config{
-		dir: "test-resources/automake",
+func TestBuildGradle(t *testing.T) {
+	r := NewRelVer{
+		dir: "test-resources/java/build.gradle",
 	}
-
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "1.2.0-SNAPSHOT", v, "error with getVersion for a configure.ac")
-}
-
-func TestCMakefile(t *testing.T) {
-
-	c := config{
-		dir: "test-resources/cmake",
-	}
-
-	v, err := getVersion(c)
-
-	assert.NoError(t, err)
-
-	assert.Equal(t, "1.2.0-SNAPSHOT", v, "error with getVersion for a CMakeLists.txt")
+	assert.Equal(t, "1.2.3-SNAPSHOT", v, "error with getVersion for a build.gradle")
 }
 
 func TestPomXML(t *testing.T) {
-	c := config{
-		dir: "test-resources/java",
+	r := NewRelVer{
+		dir: "test-resources/java/pom.xml",
 	}
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "1.0-SNAPSHOT", v, "error with getVersion for a pom.xml")
+	assert.Equal(t, "1.0-SNAPSHOT", v, "error with getVersion for a build.gradle")
+}
+
+func TestBuildGradleKTS(t *testing.T) {
+	r := NewRelVer{
+		dir: "test-resources/kotlin",
+	}
+	v, err := r.getVersion()
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.2.3", v, "error with getVersion for a build.gradle.kts")
 }
 
 func TestPackageJSON(t *testing.T) {
-	c := config{
-		dir: "test-resources/package",
+	r := NewRelVer{
+		dir: "test-resources/nodejs",
 	}
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
 	assert.Equal(t, "1.2.3", v, "error with getVersion for a package.json")
 }
 
-// TODO enable this. It seems that meta-pipeline is bumping the version of the Chart.yaml
-// when the release pipeline is running, this is causing this test to fail.
-/*
-func TestChart(t *testing.T) {
-	c := config{
-		dir: "test-resources/helm",
+func TestSetupCfg(t *testing.T) {
+
+	r := NewRelVer{
+		dir: "test-resources/python/setup.cfg",
 	}
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "0.0.1-SNAPSHOT", v, "error with getVersion for a Chart.yaml")
+	assert.Equal(t, "1.2.3", v, "error with getVersion for a setup.cfg")
 }
-*/
 
-func TestSetupPyStandard(t *testing.T) {
+func TestSetupPy(t *testing.T) {
 
-	c := config{
-		dir: "test-resources/python/standard",
+	r := NewRelVer{
+		dir: "test-resources/python/setup.py",
 	}
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
@@ -99,10 +91,10 @@ func TestSetupPyStandard(t *testing.T) {
 
 func TestSetupPyNested(t *testing.T) {
 
-	c := config{
-		dir: "test-resources/python/nested",
+	r := NewRelVer{
+		dir: "test-resources/python/setup.py/nested",
 	}
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
@@ -111,38 +103,43 @@ func TestSetupPyNested(t *testing.T) {
 
 func TestSetupPyOneLine(t *testing.T) {
 
-	c := config{
-		dir: "test-resources/python/one_line",
+	r := NewRelVer{
+		dir: "test-resources/python/setup.py/one_line",
 	}
-	v, err := getVersion(c)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
 	assert.Equal(t, "4.5.6", v, "error with getVersion for a setup.py")
 }
 
-func TestGetGitTag(t *testing.T) {
-	c := config{
-		ghOwner:      "jenkins-x",
-		ghRepository: "jx-release-version",
+func TestMakefile(t *testing.T) {
+	r := NewRelVer{
+		dir: "test-resources/make",
 	}
 
-	gitHubClient := adapters.NewGitHubClient(c.debug)
-
-	expectedVersion, err := getLatestTag(c, gitHubClient)
-	assert.NoError(t, err)
-
-	c = config{}
-
-	v, err := getLatestTag(c, gitHubClient)
+	v, err := r.getVersion()
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, expectedVersion, v, "error with getLatestTag for a Makefile")
+	assert.Equal(t, "99.0.0-SNAPSHOT", v, "error with getVersion for a Makefile")
+}
+
+func TestCMakefile(t *testing.T) {
+
+	r := NewRelVer{
+		dir: "test-resources/cmake",
+	}
+
+	v, err := r.getVersion()
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.2.0-SNAPSHOT", v, "error with getVersion for a CMakeLists.txt")
 }
 
 func TestGetNewVersionFromTagCurrentRepo(t *testing.T) {
-	c := config{
+	r := NewRelVer{
 		dryrun: false,
 		dir:    "test-resources/make",
 	}
@@ -150,27 +147,47 @@ func TestGetNewVersionFromTagCurrentRepo(t *testing.T) {
 	tags := createTags()
 
 	mockClient := &mocks.GitClient{}
-	mockClient.On("ListTags", context.Background(), c.ghOwner, c.ghRepository).Return(tags, nil)
-	v, err := getNewVersionFromTag(c, mockClient)
+	mockClient.On("ListTags", context.Background(), r.ghOwner, r.ghRepository).Return(tags, nil)
+	v, err := r.getNewVersionFromTag(mockClient)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "1.2.0", v, "error bumping a patch version")
+	assert.Equal(t, "99.0.0", v, "error bumping a patch version")
+}
+
+func TestGetGitTag(t *testing.T) {
+	r := NewRelVer{
+		ghOwner:      "trendmicro",
+		ghRepository: "new-release-version",
+	}
+
+	gitHubClient := adapters.NewGitHubClient(r.debug)
+
+	expectedVersion, err := r.getLatestTag(gitHubClient)
+	assert.NoError(t, err)
+
+	r = NewRelVer{}
+
+	v, err := r.getLatestTag(gitHubClient)
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, expectedVersion, v, "error with getLatestTag for a Makefile")
 }
 
 func TestGetNewMinorVersionFromGitHubTag(t *testing.T) {
 
-	c := config{
-		ghOwner:      "rawlingsj",
-		ghRepository: "semver-release-version",
+	r := NewRelVer{
+		ghOwner:      "trendmicro",
+		ghRepository: "new-release-version",
 		minor:        true,
 	}
 
 	tags := createTags()
 
 	mockClient := &mocks.GitClient{}
-	mockClient.On("ListTags", context.Background(), c.ghOwner, c.ghRepository).Return(tags, nil)
+	mockClient.On("ListTags", context.Background(), r.ghOwner, r.ghRepository).Return(tags, nil)
 
-	v, err := getNewVersionFromTag(c, mockClient)
+	v, err := r.getNewVersionFromTag(mockClient)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "1.1.0", v, "error bumping a minor version")
@@ -178,17 +195,17 @@ func TestGetNewMinorVersionFromGitHubTag(t *testing.T) {
 
 func TestGetNewPatchVersionFromGitHubTag(t *testing.T) {
 
-	c := config{
-		ghOwner:      "rawlingsj",
-		ghRepository: "semver-release-version",
+	r := NewRelVer{
+		ghOwner:      "trendmicro",
+		ghRepository: "new-release-version",
 	}
 
 	tags := createTags()
 
 	mockClient := &mocks.GitClient{}
-	mockClient.On("ListTags", context.Background(), c.ghOwner, c.ghRepository).Return(tags, nil)
+	mockClient.On("ListTags", context.Background(), r.ghOwner, r.ghRepository).Return(tags, nil)
 
-	v, err := getNewVersionFromTag(c, mockClient)
+	v, err := r.getNewVersionFromTag(mockClient)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "1.0.18", v, "error bumping a patch version")

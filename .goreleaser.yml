@@ -1,25 +1,13 @@
-project_name: jx-release-version
-
-release:
-  github:
-    owner: jenkins-x
-    name: jx-release-version
-
 builds:
-  - main : main.go
-    binary: jx-release-version
-    goos:
-      - darwin
+  - goos:
       - linux
-      - windows
     goarch:
       - amd64
-    ldflags: -X main.Version={{.Version}} -X main.GitTag={{.Tag}} -X main.BuildDate={{.Date}}
-    env:
-      - GO111MODULE=on
-      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.Version={{.Version}}
 
-archive:
-  files:
-    - README.md
-    - LICENSE
+archives:
+  - format: zip
+
+release:
+  draft: true
