@@ -190,7 +190,7 @@ func TestGetNewMinorVersionFromGitHubTag(t *testing.T) {
 	v, err := r.getNewVersionFromTag(mockClient)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "1.1.0", v, "error bumping a minor version")
+	assert.Equal(t, "99.1.0", v, "error bumping a minor version")
 }
 
 func TestGetNewPatchVersionFromGitHubTag(t *testing.T) {
@@ -208,29 +208,29 @@ func TestGetNewPatchVersionFromGitHubTag(t *testing.T) {
 	v, err := r.getNewVersionFromTag(mockClient)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "1.0.18", v, "error bumping a patch version")
+	assert.Equal(t, "99.0.18", v, "error bumping a patch version")
 }
 
 func createTags() []domain.Tag {
 	var tags []domain.Tag
-	tags = append(tags, domain.Tag{Name: "v1.0.0"})
-	tags = append(tags, domain.Tag{Name: "v1.0.1"})
-	tags = append(tags, domain.Tag{Name: "v1.0.10"})
-	tags = append(tags, domain.Tag{Name: "v1.0.11"})
-	tags = append(tags, domain.Tag{Name: "v1.0.12"})
-	tags = append(tags, domain.Tag{Name: "v1.0.13"})
-	tags = append(tags, domain.Tag{Name: "v1.0.14"})
-	tags = append(tags, domain.Tag{Name: "v1.0.15"})
-	tags = append(tags, domain.Tag{Name: "v1.0.16"})
-	tags = append(tags, domain.Tag{Name: "v1.0.17"})
-	tags = append(tags, domain.Tag{Name: "v1.0.2"})
-	tags = append(tags, domain.Tag{Name: "v1.0.3"})
-	tags = append(tags, domain.Tag{Name: "v1.0.4"})
-	tags = append(tags, domain.Tag{Name: "v1.0.5"})
-	tags = append(tags, domain.Tag{Name: "v1.0.6"})
-	tags = append(tags, domain.Tag{Name: "v1.0.7"})
-	tags = append(tags, domain.Tag{Name: "v1.0.8"})
-	tags = append(tags, domain.Tag{Name: "v1.0.9"})
+	tags = append(tags, domain.Tag{Name: "v99.0.0"})
+	tags = append(tags, domain.Tag{Name: "v99.0.1"})
+	tags = append(tags, domain.Tag{Name: "v99.0.2"})
+	tags = append(tags, domain.Tag{Name: "v99.0.3"})
+	tags = append(tags, domain.Tag{Name: "v99.0.4"})
+	tags = append(tags, domain.Tag{Name: "v99.0.5"})
+	tags = append(tags, domain.Tag{Name: "v99.0.6"})
+	tags = append(tags, domain.Tag{Name: "v99.0.7"})
+	tags = append(tags, domain.Tag{Name: "v99.0.8"})
+	tags = append(tags, domain.Tag{Name: "v99.0.9"})
+	tags = append(tags, domain.Tag{Name: "v99.0.10"})
+	tags = append(tags, domain.Tag{Name: "v99.0.11"})
+	tags = append(tags, domain.Tag{Name: "v99.0.12"})
+	tags = append(tags, domain.Tag{Name: "v99.0.13"})
+	tags = append(tags, domain.Tag{Name: "v99.0.14"})
+	tags = append(tags, domain.Tag{Name: "v99.0.15"})
+	tags = append(tags, domain.Tag{Name: "v99.0.16"})
+	tags = append(tags, domain.Tag{Name: "v99.0.17"})
 
 	return tags
 }
