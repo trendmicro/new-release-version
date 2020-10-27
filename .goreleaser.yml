@@ -6,8 +6,5 @@ builds:
     ldflags:
       - -s -w -X main.Version={{.Version}}
 
-archives:
-  - format: zip
-
 release:
   draft: true
