@@ -1,6 +1,6 @@
 # New Release Version
 
-![Go](https://github.com/trendmicro/new-release-version/workflows/Go/badge.svg)
+![Build](https://github.com/trendmicro/new-release-version/workflows/Build/badge.svg)
 
 Returns a new release version based on previous git tags that can be used in a new release.
 

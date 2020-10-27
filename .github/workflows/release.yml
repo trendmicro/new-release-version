@@ -2,11 +2,8 @@ name: Release
 
 on:
   push:
-    branches: [ test-release ]
-#on:
-  #push:
-    #tags:
-      #- 'v*'
+    tags:
+      - 'v*'
 
 jobs:
   release:
