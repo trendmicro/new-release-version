@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/trendmicro/new-release-version/adapters"
-	"github.com/trendmicro/new-release-version/domain"
 	"github.com/trendmicro/new-release-version/mocks"
 )
 
@@ -40,7 +38,7 @@ func TestPomXML(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "1.0-SNAPSHOT", v, "error with getVersion for a build.gradle")
+	assert.Equal(t, "1.0-SNAPSHOT", v, "error with getVersion for a pom.xml")
 }
 
 func TestBuildGradleKTS(t *testing.T) {
@@ -98,7 +96,7 @@ func TestSetupPyNested(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "4.5.6", v, "error with getVersion for a setup.py")
+	assert.Equal(t, "4.5.6", v, "error with getVersion for a nested setup.py")
 }
 
 func TestSetupPyOneLine(t *testing.T) {
@@ -110,7 +108,7 @@ func TestSetupPyOneLine(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	assert.Equal(t, "4.5.6", v, "error with getVersion for a setup.py")
+	assert.Equal(t, "4.5.6", v, "error with getVersion for a oneliner setup.py")
 }
 
 func TestMakefile(t *testing.T) {
@@ -138,72 +136,14 @@ func TestCMakefile(t *testing.T) {
 	assert.Equal(t, "1.2.0-SNAPSHOT", v, "error with getVersion for a CMakeLists.txt")
 }
 
-func TestGetNewVersionFromTagCurrentRepo(t *testing.T) {
-	r := NewRelVer{
-		dryrun: false,
-		dir:    "test-resources/make",
-	}
+func TestGetNewPatchVersion(t *testing.T) {
+
+	r := NewRelVer{}
 
 	tags := createTags()
 
 	mockClient := &mocks.GitClient{}
-	mockClient.On("ListTags", context.Background(), r.ghOwner, r.ghRepository).Return(tags, nil)
-	v, err := r.getNewVersionFromTag(mockClient)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "99.0.0", v, "error bumping a patch version")
-}
-
-func TestGetGitTag(t *testing.T) {
-	r := NewRelVer{
-		ghOwner:      "trendmicro",
-		ghRepository: "new-release-version",
-	}
-
-	gitHubClient := adapters.NewGitHubClient(r.debug)
-
-	expectedVersion, err := r.getLatestTag(gitHubClient)
-	assert.NoError(t, err)
-
-	r = NewRelVer{}
-
-	v, err := r.getLatestTag(gitHubClient)
-
-	assert.NoError(t, err)
-
-	assert.Equal(t, expectedVersion, v, "error with getLatestTag for a Makefile")
-}
-
-func TestGetNewMinorVersionFromGitHubTag(t *testing.T) {
-
-	r := NewRelVer{
-		ghOwner:      "trendmicro",
-		ghRepository: "new-release-version",
-		minor:        true,
-	}
-
-	tags := createTags()
-
-	mockClient := &mocks.GitClient{}
-	mockClient.On("ListTags", context.Background(), r.ghOwner, r.ghRepository).Return(tags, nil)
-
-	v, err := r.getNewVersionFromTag(mockClient)
-
-	assert.NoError(t, err)
-	assert.Equal(t, "99.1.0", v, "error bumping a minor version")
-}
-
-func TestGetNewPatchVersionFromGitHubTag(t *testing.T) {
-
-	r := NewRelVer{
-		ghOwner:      "trendmicro",
-		ghRepository: "new-release-version",
-	}
-
-	tags := createTags()
-
-	mockClient := &mocks.GitClient{}
-	mockClient.On("ListTags", context.Background(), r.ghOwner, r.ghRepository).Return(tags, nil)
+	mockClient.On("ListTags").Return(tags, nil)
 
 	v, err := r.getNewVersionFromTag(mockClient)
 
@@ -211,26 +151,56 @@ func TestGetNewPatchVersionFromGitHubTag(t *testing.T) {
 	assert.Equal(t, "99.0.18", v, "error bumping a patch version")
 }
 
-func createTags() []domain.Tag {
-	var tags []domain.Tag
-	tags = append(tags, domain.Tag{Name: "v99.0.0"})
-	tags = append(tags, domain.Tag{Name: "v99.0.1"})
-	tags = append(tags, domain.Tag{Name: "v99.0.2"})
-	tags = append(tags, domain.Tag{Name: "v99.0.3"})
-	tags = append(tags, domain.Tag{Name: "v99.0.4"})
-	tags = append(tags, domain.Tag{Name: "v99.0.5"})
-	tags = append(tags, domain.Tag{Name: "v99.0.6"})
-	tags = append(tags, domain.Tag{Name: "v99.0.7"})
-	tags = append(tags, domain.Tag{Name: "v99.0.8"})
-	tags = append(tags, domain.Tag{Name: "v99.0.9"})
-	tags = append(tags, domain.Tag{Name: "v99.0.10"})
-	tags = append(tags, domain.Tag{Name: "v99.0.11"})
-	tags = append(tags, domain.Tag{Name: "v99.0.12"})
-	tags = append(tags, domain.Tag{Name: "v99.0.13"})
-	tags = append(tags, domain.Tag{Name: "v99.0.14"})
-	tags = append(tags, domain.Tag{Name: "v99.0.15"})
-	tags = append(tags, domain.Tag{Name: "v99.0.16"})
-	tags = append(tags, domain.Tag{Name: "v99.0.17"})
+func TestGetNewMinorVersion(t *testing.T) {
 
-	return tags
+	r := NewRelVer{
+		minor: true,
+	}
+
+	tags := createTags()
+
+	mockClient := &mocks.GitClient{}
+	mockClient.On("ListTags").Return(tags, nil)
+
+	v, err := r.getNewVersionFromTag(mockClient)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "99.1.0", v, "error bumping a minor version")
+}
+
+// The latest tag in GitHub and locally should be equal, granted the user hasn't added a new tag.
+func TestGetLatestTag(t *testing.T) {
+	r := NewRelVer{}
+
+	gitHubClient := adapters.NewGitHubClient("trendmicro", "new-release-version", r.debug)
+	githubVersion, err := r.getLatestTag(gitHubClient)
+	assert.NoError(t, err)
+
+	localGitClient := adapters.NewLocalGitClient(".", r.debug)
+	localVersion, err := r.getLatestTag(localGitClient)
+	assert.NoError(t, err)
+	assert.Equal(t, githubVersion, localVersion, "error with getLatestTag")
+}
+
+func createTags() []string {
+	return []string{
+		"v99.0.0",
+		"v99.0.1",
+		"v99.0.10",
+		"v99.0.11",
+		"v99.0.12",
+		"v99.0.13",
+		"v99.0.14",
+		"v99.0.15",
+		"v99.0.16",
+		"v99.0.17",
+		"v99.0.2",
+		"v99.0.3",
+		"v99.0.4",
+		"v99.0.5",
+		"v99.0.6",
+		"v99.0.7",
+		"v99.0.8",
+		"v99.0.9",
+	}
 }

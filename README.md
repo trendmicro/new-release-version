@@ -17,7 +17,7 @@ Using a git tag to work out the next release version is better than traditional 
 ## Prerequisites
 
 - [Go](https://go.dev/)
-- `git` to be available on your `$PATH`
+- [Git](https://git-scm.com/)
 
 ## Install
 

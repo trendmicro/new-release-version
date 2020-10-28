@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -9,7 +8,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -19,7 +17,6 @@ import (
 	"github.com/hashicorp/go-version"
 
 	"github.com/trendmicro/new-release-version/adapters"
-	"github.com/trendmicro/new-release-version/domain"
 )
 
 type findVersion func([]byte) (string, error)
@@ -76,30 +73,28 @@ func unmarshalXMLVersion(data []byte) (string, error) {
 	return "0.0.0", errors.New("No version found")
 }
 
-// NewRelVer is the release version config
+// NewRelVer is the release version config.
 type NewRelVer struct {
-	dryrun       bool
-	debug        bool
-	dir          string
-	ghOwner      string
-	ghRepository string
-	samerelease  bool
-	baseVersion  string
-	minor        bool
+	debug       bool
+	dir         string
+	samerelease bool
+	baseVersion string
+	minor       bool
 }
 
+// Version is the version of new-release-version.  This is set by goreleaser.
 var Version = "dev"
 
 func main() {
 
-	debug := flag.Bool("debug", false, "prints debug into to console")
-	dir := flag.String("directory", ".", "the directory to look for version files with the project version to bump")
-	owner := flag.String("gh-owner", "", "a github repository owner if not running from within a git project")
-	repo := flag.String("gh-repository", "", "a github repository if not running from within a git project")
-	baseVersion := flag.String("base-version", "", "version to use instead of version file")
-	samerelease := flag.Bool("same-release", false, "for support old releases: for example 7.0.x and tag for new release 7.1.x already exist, with `-same-release` argument next version from 7.0.x will be returned ")
-	ver := flag.Bool("version", false, "prints the version")
-	minor := flag.Bool("minor", false, "increment minor version instead of patch")
+	dir := flag.String("directory", ".", "Directory of git project.")
+	baseVersion := flag.String("base-version", "", "Version to use instead of version file.")
+	samerelease := flag.Bool("same-release", false, "Support older releases: for example 7.0.x and tag for new release 7.1.x already exist, with `-same-release` argument next version from 7.0.x will be returned.")
+	minor := flag.Bool("minor", false, "Increment minor version instead of patch.")
+	owner := flag.String("gh-owner", "", "GitHub repository owner to fetch tags from instead of the local git repo.")
+	repo := flag.String("gh-repository", "", "GitHub repository to fetch tags from instead of the local git repo.")
+	debug := flag.Bool("debug", false, "Prints debug into to console")
+	ver := flag.Bool("version", false, "Prints the version")
 	flag.Parse()
 
 	if *ver {
@@ -108,13 +103,11 @@ func main() {
 	}
 
 	r := NewRelVer{
-		debug:        *debug,
-		dir:          *dir,
-		ghOwner:      *owner,
-		ghRepository: *repo,
-		samerelease:  *samerelease,
-		baseVersion:  *baseVersion,
-		minor:        *minor,
+		debug:       *debug,
+		dir:         *dir,
+		samerelease: *samerelease,
+		baseVersion: *baseVersion,
+		minor:       *minor,
 	}
 
 	if r.debug {
@@ -124,8 +117,14 @@ func main() {
 		}
 	}
 
-	gitHubClient := adapters.NewGitHubClient(r.debug)
-	v, err := r.getNewVersionFromTag(gitHubClient)
+	var gitClient adapters.GitClient
+	if *owner != "" && *repo != "" {
+		gitClient = adapters.NewGitHubClient(*owner, *repo, r.debug)
+	} else {
+		gitClient = adapters.NewLocalGitClient(r.dir, r.debug)
+	}
+
+	v, err := r.getNewVersionFromTag(gitClient)
 	if err != nil {
 		fmt.Println("failed to get new version", err)
 		os.Exit(-1)
@@ -133,9 +132,8 @@ func main() {
 	fmt.Print(v)
 }
 
-func (r NewRelVer) getNewVersionFromTag(gitClient domain.GitClient) (string, error) {
+func (r NewRelVer) getNewVersionFromTag(gitClient adapters.GitClient) (string, error) {
 
-	// get the latest github tag
 	tag, err := r.getLatestTag(gitClient)
 	if err != nil && tag == "" {
 		return "", err
@@ -184,91 +182,42 @@ func (r NewRelVer) getNewVersionFromTag(gitClient domain.GitClient) (string, err
 	return fmt.Sprintf("%d.%d.%d", majorVersion, minorVersion, patchVersion), nil
 }
 
-func (r NewRelVer) getLatestTag(gitClient domain.GitClient) (string, error) {
+func (r NewRelVer) getLatestTag(gitClient adapters.GitClient) (string, error) {
 	// Get base version from file, will fallback to 0.0.0 if not found.
-	baseVersion, _ := r.getVersion()
-
+	baseVersion, err := r.getVersion()
+	if err != nil && r.debug {
+		fmt.Printf("%v\n", err)
+	}
 	if r.debug {
 		fmt.Printf("base version: %s\n", baseVersion)
 	}
 
-	// if repo isn't provided by flags fall back to using current repo if run from a git project
-	var versionsRaw []string
-	if r.ghOwner != "" && r.ghRepository != "" {
-		ctx := context.Background()
-
-		tags, err := gitClient.ListTags(ctx, r.ghOwner, r.ghRepository)
-
-		if err != nil {
-			return "", err
-		}
-		if len(tags) == 0 {
-			// if no current flags exist then lets start at base version
-			return baseVersion, errors.New("No existing tags found")
-		}
-
-		// build an array of all the tags
-		versionsRaw = make([]string, len(tags))
-		for i, tag := range tags {
-			if r.debug {
-				fmt.Printf("found remote tag %s\n", tag.Name)
-			}
-			versionsRaw[i] = tag.Name
-		}
-	} else {
-		_, err := exec.LookPath("git")
-		if err != nil {
-			return "", fmt.Errorf("error running git: %v", err)
-		}
-		cmd := exec.Command("git", "fetch", "--tags", "-v")
-		cmd.Env = append(cmd.Env, os.Environ()...)
-		cmd.Dir = r.dir
-		err = cmd.Run()
-		if err != nil {
-			return "", fmt.Errorf("error fetching tags: %v", err)
-		}
-
-		cmd = exec.Command("git", "tag")
-		cmd.Dir = r.dir
-		out, err := cmd.Output()
-		if err != nil {
-			return "", err
-		}
-		str := strings.TrimSuffix(string(out), "\n")
-		tags := strings.Split(str, "\n")
-
-		if len(tags) == 0 {
-			// if no current flags exist then lets start at base version
-			return baseVersion, errors.New("No existing tags found")
-		}
-
-		// build an array of all the tags
-		versionsRaw = make([]string, len(tags))
-		for i, tag := range tags {
-			if r.debug {
-				fmt.Printf("found tag %s\n", tag)
-			}
-			tag = strings.TrimPrefix(tag, "v")
-			if tag != "" {
-				versionsRaw[i] = tag
-			}
-		}
+	tags, err := gitClient.ListTags()
+	if err != nil {
+		return "", err
+	}
+	if len(tags) == 0 {
+		// if no tags exist then lets start at base version
+		return baseVersion, errors.New("No existing tags found")
+	}
+	if r.debug {
+		fmt.Printf("found tags: %v\n", tags)
 	}
 
-	// turn the array into a new collection of versions that we can sort
+	// turn tags into a new collection of versions that we can sort
 	var versions []*version.Version
-	for _, raw := range versionsRaw {
+	for _, t := range tags {
 		// if same-release argument is set work only with versions which Major and Minor versions are the same
 		if r.samerelease {
-			same, _ := isMajorMinorTheSame(baseVersion, raw)
+			same, _ := isMajorMinorTheSame(baseVersion, t)
 			if same {
-				v, _ := version.NewVersion(raw)
+				v, _ := version.NewVersion(t)
 				if v != nil {
 					versions = append(versions, v)
 				}
 			}
 		} else {
-			v, _ := version.NewVersion(raw)
+			v, _ := version.NewVersion(t)
 			if v != nil {
 				versions = append(versions, v)
 			}
@@ -276,20 +225,20 @@ func (r NewRelVer) getLatestTag(gitClient domain.GitClient) (string, error) {
 	}
 
 	if len(versions) == 0 {
-		// if no current flags exist then lets start at base version
-		return baseVersion, errors.New("No existing tags found")
+		// if no version tags exist then lets start at base version
+		return baseVersion, errors.New("No version tags found")
 	}
 
 	// return the latest tag
 	col := version.Collection(versions)
 	if r.debug {
-		fmt.Printf("version collection %v\n", col)
+		fmt.Printf("found versions: %v\n", col)
 	}
 
 	sort.Sort(col)
 	latest := len(versions)
 	if versions[latest-1] == nil {
-		return baseVersion, errors.New("No existing tags found")
+		return baseVersion, errors.New("No latest version found")
 	}
 	return versions[latest-1].String(), nil
 }
