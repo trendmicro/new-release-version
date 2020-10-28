@@ -300,7 +300,9 @@ func (r NewRelVer) getVersion() (string, error) {
 	}
 	for verFile, verFunc := range versionFiles {
 		if file, err := r.findVersionFile(verFile); err == nil {
-			return verFunc(file)
+			if v, err := verFunc(file); err == nil {
+				return v, nil
+			}
 		}
 	}
 	return "0.0.0", errors.New("No version file found")
@@ -308,7 +310,7 @@ func (r NewRelVer) getVersion() (string, error) {
 
 func (r NewRelVer) findVersionFile(f string) ([]byte, error) {
 	data, err := ioutil.ReadFile(filepath.Join(r.dir, f))
-	if err != nil && r.debug {
+	if err == nil && r.debug {
 		fmt.Printf("found %s\n", f)
 	}
 	return data, err
