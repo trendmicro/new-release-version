@@ -21,7 +21,11 @@ Using a git tag to work out the next release version is better than traditional 
 
 ## Install
 
+You can install the latest from the `main` branch
+
     go get github.com/trendmicro/new-release-version
+
+Or install a specific version from [releases](https://github.com/trendmicro/new-release-version/releases/)
 
 ## Examples
 
@@ -38,14 +42,14 @@ Using a git tag to work out the next release version is better than traditional 
 ## Example Makefile
 
 ```Makefile
-VERSION := 2.0.0
+VERSION := 2.0
 ```
 
 ## Example versions.gradle
 
 ```gradle
 ext {
-    project.version = '1.0.0'
+    project.version = '1.0'
 }
 ```
 
