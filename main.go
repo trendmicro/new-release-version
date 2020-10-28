@@ -251,6 +251,8 @@ func (r NewRelVer) getVersion() (string, error) {
 		if file, err := r.findVersionFile(verFile); err == nil {
 			if v, err := verFunc(file); err == nil {
 				return v, nil
+			} else if r.debug {
+				fmt.Printf("%v\n", err)
 			}
 		}
 	}
