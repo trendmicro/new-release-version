@@ -103,9 +103,5 @@ func (g *LocalGitClient) ListTags() ([]string, error) {
 
 	str := strings.TrimSuffix(string(out), "\n")
 	tags := strings.Split(str, "\n")
-	if g.debug {
-		fmt.Printf("found tags: %v\n", tags)
-	}
-
 	return tags, nil
 }
