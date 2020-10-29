@@ -82,7 +82,7 @@ func (r NewRelVer) GetLatestVersion(gitClient GitClient) (*semver.Version, error
 		if r.debug {
 			fmt.Println("No version tags found")
 		}
-		return nil, nil
+		return baseVersion, nil
 	}
 
 	semver.Sort(versions)

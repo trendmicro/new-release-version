@@ -168,6 +168,22 @@ func TestGetNewVersionNoTags(t *testing.T) {
 	assert.Equal(t, "0.0.1", v.String())
 }
 
+func TestGetNewVersionSameRelease(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "1.0",
+		sameRelease: true,
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return(Tags, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.0.1", v.String())
+}
+
 func TestGetNewMinorVersion(t *testing.T) {
 	r := NewRelVer{
 		dir:   "examples",
