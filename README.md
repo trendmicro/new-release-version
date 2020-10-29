@@ -42,8 +42,6 @@ Or install a specific version from [releases](https://github.com/trendmicro/new-
 
 - If your latest git tag is `1.2.3` and your version file is `2.0.0` then `new-release-version` will return `2.0.0`
 
-- If you need to support an old release for example 7.0.x and tags for new realese 7.1.x already exist, the `-same-release` flag  will help to obtain version from 7.0.x release. If the version file version is 7.0.0-SNAPSHOT and both the 7.1.0 and 7.0.2 tags exist the command `new-release-version` will return 7.1.1 but if we run `new-release-version -same-release` it will return 7.0.3
-
-- If you need to get a release version `1.1.0` for older release and your last tag is `1.2.3` please change your version file to `1.1.0-SNAPSHOT` and run `new-release-version -same-release`
+- If your latest git tag is `7.1.0` but you want to increment an older release, say `7.0.5`, use `new-release-version -base-version 7.0 -same-release` to return the next version in the `7.0` release.
 
 See [examples](examples) directory for examples of supported version files.

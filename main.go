@@ -18,7 +18,7 @@ func main() {
 
 	dir := flag.String("directory", ".", "Directory of git project.")
 	baseVersion := flag.String("base-version", "", "Version to use instead of version file.")
-	sameRelease := flag.Bool("same-release", false, "Support older releases: for example 7.0.x and tag for new release 7.1.x already exist, with `-same-release` argument next version from 7.0.x will be returned.")
+	sameRelease := flag.Bool("same-release", false, "Increment the latest base version release ignoring any releases higher than the base version release.")
 	minor := flag.Bool("minor", false, "Increment minor version instead of patch.")
 	fetch := flag.Bool("git-fetch", true, "Fetch tags from remote.")
 	owner := flag.String("gh-owner", "", "GitHub repository owner to fetch tags from instead of the local git repo.")
@@ -32,6 +32,10 @@ func main() {
 		fmt.Println("commit:", commit)
 		fmt.Println("date:", date)
 		fmt.Println("built by:", builtBy)
+		fmt.Println("environment:")
+		for _, e := range os.Environ() {
+			fmt.Println(e)
+		}
 	}
 
 	if *ver {
@@ -45,13 +49,6 @@ func main() {
 		sameRelease: *sameRelease,
 		minor:       *minor,
 		debug:       *debug,
-	}
-
-	if r.debug {
-		fmt.Println("environment:")
-		for _, e := range os.Environ() {
-			fmt.Println(e)
-		}
 	}
 
 	var gitClient GitClient
