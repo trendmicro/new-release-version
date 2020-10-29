@@ -18,7 +18,7 @@ func main() {
 
 	dir := flag.String("directory", ".", "Directory of git project.")
 	baseVersion := flag.String("base-version", "", "Version to use instead of version file.")
-	samerelease := flag.Bool("same-release", false, "Support older releases: for example 7.0.x and tag for new release 7.1.x already exist, with `-same-release` argument next version from 7.0.x will be returned.")
+	sameRelease := flag.Bool("same-release", false, "Support older releases: for example 7.0.x and tag for new release 7.1.x already exist, with `-same-release` argument next version from 7.0.x will be returned.")
 	minor := flag.Bool("minor", false, "Increment minor version instead of patch.")
 	fetch := flag.Bool("git-fetch", true, "Fetch tags from remote.")
 	owner := flag.String("gh-owner", "", "GitHub repository owner to fetch tags from instead of the local git repo.")
@@ -35,7 +35,7 @@ func main() {
 	r := NewRelVer{
 		dir:         *dir,
 		baseVersion: *baseVersion,
-		samerelease: *samerelease,
+		sameRelease: *sameRelease,
 		minor:       *minor,
 		debug:       *debug,
 	}

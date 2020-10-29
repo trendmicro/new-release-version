@@ -117,8 +117,8 @@ func TestGetLatestVersionNoTags(t *testing.T) {
 	mockClient := &GitClientMock{}
 	mockClient.On("ListTags").Return([]string{}, nil)
 
-	v, _ := r.GetLatestVersion(mockClient)
-	assert.NotNil(t, v)
+	v, err := r.GetLatestVersion(mockClient)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "0.0.0", v.String())
 }
@@ -162,8 +162,8 @@ func TestGetNewVersionNoTags(t *testing.T) {
 	mockClient := &GitClientMock{}
 	mockClient.On("ListTags").Return([]string{}, nil)
 
-	v, _ := r.GetNewVersion(mockClient)
-	assert.NotNil(t, v)
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
 
 	assert.Equal(t, "0.0.1", v.String())
 }
@@ -188,7 +188,8 @@ func TestGetBaseVersionNoVersionFile(t *testing.T) {
 		dir: "examples",
 	}
 
-	v, _ := r.GetBaseVersion()
+	v, err := r.GetBaseVersion()
+	assert.NoError(t, err)
 
 	assert.Equal(t, "0.0.0", v.String())
 }
