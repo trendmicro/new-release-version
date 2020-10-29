@@ -1,4 +1,4 @@
-package adapters
+package main
 
 import (
 	"context"
@@ -63,12 +63,14 @@ func (g *GitHubClient) ListTags() ([]string, error) {
 
 type LocalGitClient struct {
 	dir   string
+	fetch bool
 	debug bool
 }
 
-func NewLocalGitClient(dir string, debug bool) GitClient {
+func NewLocalGitClient(dir string, fetch, debug bool) GitClient {
 	return &LocalGitClient{
 		dir:   dir,
+		fetch: fetch,
 		debug: debug,
 	}
 }
@@ -82,19 +84,21 @@ func (g *LocalGitClient) ListTags() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error finding git: %v", err)
 	}
-	cmd := exec.Command("git", "fetch", "--tags", "-v")
-	cmd.Env = append(cmd.Env, os.Environ()...)
-	cmd.Dir = g.dir
-	out, err := cmd.Output()
-	if err != nil && g.debug {
-		fmt.Printf("ignoring error from `git fetch`: %v\n%v\n", err, out)
+	if g.fetch {
+		cmd := exec.Command("git", "fetch", "--tags", "-v")
+		cmd.Env = append(cmd.Env, os.Environ()...)
+		cmd.Dir = g.dir
+		out, err := cmd.Output()
+		if err != nil && g.debug {
+			fmt.Printf("ignoring error from `git fetch`: %v\n%v\n", err, out)
+		}
 	}
 
-	cmd = exec.Command("git", "tag", "--list")
+	cmd := exec.Command("git", "tag", "--list")
 	cmd.Dir = g.dir
-	out, err = cmd.Output()
+	out, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("error running `git tag`: %v\n", err)
+		return nil, fmt.Errorf("error running `git tag`: %v", err)
 	}
 
 	str := strings.TrimSuffix(string(out), "\n")

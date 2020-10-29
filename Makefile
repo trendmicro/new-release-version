@@ -10,7 +10,7 @@ test:
 
 .PHONY: build
 build:
-	go build -v -ldflags '-X "main.Version=$(VERSION)-dev"' .
+	go build -v .
 
 .PHONY: clean
 clean:

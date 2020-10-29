@@ -29,6 +29,13 @@ Or install a specific version from [releases](https://github.com/trendmicro/new-
 
 ## Examples
 
+```sh
+    ➜ RELEASE_VERSION=$(new-release-version)
+    ➜ echo "New release version ${RELEASE_VERSION}
+    ➜ git tag -fa v${RELEASE_VERSION} -m 'Release version ${RELEASE_VERSION}'
+    ➜ git push origin v${RELEASE_VERSION}
+```
+
 - If your project is new or has no existing git tags then running `new-release-version` will return a default version of `0.0.1`
 
 - If your latest git tag is `1.2.3` and your version file is `1.2.0-SNAPSHOT` then `new-release-version` will return `1.2.4`
@@ -39,25 +46,4 @@ Or install a specific version from [releases](https://github.com/trendmicro/new-
 
 - If you need to get a release version `1.1.0` for older release and your last tag is `1.2.3` please change your version file to `1.1.0-SNAPSHOT` and run `new-release-version -same-release`
 
-## Example Makefile
-
-```Makefile
-VERSION := 2.0
-```
-
-## Example versions.gradle
-
-```gradle
-ext {
-    project.version = '1.0'
-}
-```
-
-Then in your release pipeline do something like this:
-
-```sh
-    ➜ RELEASE_VERSION=$(new-release-version)
-    ➜ echo "New release version ${RELEASE_VERSION}
-    ➜ git tag -fa v${RELEASE_VERSION} -m 'Release version ${RELEASE_VERSION}'
-    ➜ git push origin v${RELEASE_VERSION}
-```
+See [examples](examples) directory for examples of supported version files.
