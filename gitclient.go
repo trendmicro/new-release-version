@@ -98,7 +98,7 @@ func (g *LocalGitClient) ListTags() ([]string, error) {
 	cmd.Dir = g.dir
 	out, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("error running `git tag`: %v\n", err)
+		return nil, fmt.Errorf("error running `git tag`: %v", err)
 	}
 
 	str := strings.TrimSuffix(string(out), "\n")

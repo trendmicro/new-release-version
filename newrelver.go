@@ -29,9 +29,17 @@ func NewSemVer(v string) (*semver.Version, error) {
 }
 
 func (r NewRelVer) GetNewVersion(gitClient GitClient) (*semver.Version, error) {
-	newVersion, err := r.GetLatestVersion(gitClient)
+	newVersion, baseVersion, err := r.GetLatestVersion(gitClient)
 	if err != nil {
 		return nil, err
+	}
+
+	if newVersion == nil {
+		// Return the new base version as is unless it is 0.0.0, in which case we should increment to 0.0.1
+		if !baseVersion.Equal(semver.Version{}) {
+			return baseVersion, nil
+		}
+		newVersion = baseVersion
 	}
 
 	// Increment version
@@ -44,25 +52,22 @@ func (r NewRelVer) GetNewVersion(gitClient GitClient) (*semver.Version, error) {
 	return newVersion, nil
 }
 
-func (r NewRelVer) GetLatestVersion(gitClient GitClient) (*semver.Version, error) {
+func (r NewRelVer) GetLatestVersion(gitClient GitClient) (*semver.Version, *semver.Version, error) {
 	baseVersion, err := r.GetBaseVersion()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Get all tags from git
 	tags, err := gitClient.ListTags()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	if r.debug {
 		fmt.Printf("found tags: %v\n", tags)
 	}
 	if len(tags) == 0 {
-		if r.debug {
-			fmt.Println("No existing tags found")
-		}
-		return baseVersion, nil
+		return nil, baseVersion, nil
 	}
 
 	// Find and sort the version tags
@@ -79,20 +84,16 @@ func (r NewRelVer) GetLatestVersion(gitClient GitClient) (*semver.Version, error
 		fmt.Printf("found versions: %v\n", versions)
 	}
 	if len(versions) == 0 {
-		if r.debug {
-			fmt.Println("No version tags found")
-		}
-		return baseVersion, nil
+		return nil, baseVersion, nil
 	}
-
 	semver.Sort(versions)
 	latestVersion := versions[len(versions)-1]
 
 	// Return latest version unless base version is higher
 	if baseVersion.Compare(*latestVersion) > 0 {
-		return baseVersion, nil
+		return nil, baseVersion, nil
 	}
-	return latestVersion, nil
+	return latestVersion, baseVersion, nil
 }
 
 func MajorMinorEqual(v1, v2 *semver.Version) bool {

@@ -34,6 +34,9 @@ func (_m *GitClientMock) ListTags() ([]string, error) {
 }
 
 var Tags = []string{
+	"v1.0.0",
+	"v1.0.1",
+	"v1.0.2",
 	"v99.0.0",
 	"v99.0.1",
 	"v99.0.10",
@@ -103,9 +106,10 @@ func TestGetLatestVersion(t *testing.T) {
 	mockClient := &GitClientMock{}
 	mockClient.On("ListTags").Return(Tags, nil)
 
-	v, err := r.GetLatestVersion(mockClient)
+	v, b, err := r.GetLatestVersion(mockClient)
 	assert.NoError(t, err)
 
+	assert.Equal(t, "0.0.0", b.String())
 	assert.Equal(t, "99.0.17", v.String())
 }
 
@@ -117,10 +121,27 @@ func TestGetLatestVersionNoTags(t *testing.T) {
 	mockClient := &GitClientMock{}
 	mockClient.On("ListTags").Return([]string{}, nil)
 
-	v, err := r.GetLatestVersion(mockClient)
+	v, b, err := r.GetLatestVersion(mockClient)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "0.0.0", v.String())
+	assert.Equal(t, "0.0.0", b.String())
+	assert.Nil(t, v)
+}
+
+func TestGetLatestVersionInitBase(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "1.0",
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return([]string{}, nil)
+
+	v, b, err := r.GetLatestVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.0.0", b.String())
+	assert.Nil(t, v)
 }
 
 // The latest tag in GitHub and locally should be equal, granted the user hasn't added a new tag.
@@ -130,14 +151,15 @@ func TestGetLatestVersionGitHub(t *testing.T) {
 	}
 
 	gitHubClient := NewGitHubClient("trendmicro", "new-release-version", r.debug)
-	githubVersion, err := r.GetLatestVersion(gitHubClient)
+	ghv, ghb, err := r.GetLatestVersion(gitHubClient)
 	assert.NoError(t, err)
 
 	localGitClient := NewLocalGitClient(".", true /*fetch*/, r.debug)
-	localVersion, err := r.GetLatestVersion(localGitClient)
+	v, b, err := r.GetLatestVersion(localGitClient)
 	assert.NoError(t, err)
 
-	assert.Equal(t, githubVersion, localVersion)
+	assert.Equal(t, ghb, b)
+	assert.Equal(t, ghv, v)
 }
 
 func TestGetNewVersion(t *testing.T) {
@@ -168,6 +190,36 @@ func TestGetNewVersionNoTags(t *testing.T) {
 	assert.Equal(t, "0.0.1", v.String())
 }
 
+func TestGetNewVersionInitBaseVersion(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "1.0",
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return([]string{}, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.0.0", v.String())
+}
+
+func TestGetNewVersionBumpBaseVersion(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "100.0.0",
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return(Tags, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "100.0.0", v.String())
+}
+
 func TestGetNewVersionSameRelease(t *testing.T) {
 	r := NewRelVer{
 		dir:         "examples",
@@ -181,7 +233,7 @@ func TestGetNewVersionSameRelease(t *testing.T) {
 	v, err := r.GetNewVersion(mockClient)
 	assert.NoError(t, err)
 
-	assert.Equal(t, "1.0.1", v.String())
+	assert.Equal(t, "1.0.3", v.String())
 }
 
 func TestGetNewMinorVersion(t *testing.T) {
@@ -197,6 +249,70 @@ func TestGetNewMinorVersion(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "99.1.0", v.String())
+}
+
+func TestGetNewMinorVersionNoTags(t *testing.T) {
+	r := NewRelVer{
+		dir:   "examples",
+		minor: true,
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return([]string{}, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "0.1.0", v.String())
+}
+
+func TestGetNewMinorVersionInitBase(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "100.0.0",
+		minor:       true,
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return([]string{}, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "100.0.0", v.String())
+}
+
+func TestGetNewMinorVersionBumpBase(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "100.0.0",
+		minor:       true,
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return(Tags, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "100.0.0", v.String())
+}
+
+func TestGetNewMinorVersionSameRelease(t *testing.T) {
+	r := NewRelVer{
+		dir:         "examples",
+		baseVersion: "1.0.0",
+		sameRelease: true,
+		minor:       true,
+	}
+
+	mockClient := &GitClientMock{}
+	mockClient.On("ListTags").Return(Tags, nil)
+
+	v, err := r.GetNewVersion(mockClient)
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.1.0", v.String())
 }
 
 func TestGetBaseVersionNoVersionFile(t *testing.T) {
