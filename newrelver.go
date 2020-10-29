@@ -1,13 +1,78 @@
 package main
 
 import (
+	"encoding/json"
+	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	goVersion "github.com/hashicorp/go-version"
 )
+
+const versionRegex = `[\.\d]+(-\w+)?`
+
+type findVersion func([]byte) (string, error)
+
+var versionFiles = map[string]findVersion{
+	"versions.gradle":  versionMatcher(`(?m)project\.version\s*=\s*['"](%s)['"]$`, 1),
+	"build.gradle":     versionMatcher(`(?m)^version\s*=\s*['"](%s)['"]$`, 1),
+	"build.gradle.kts": versionMatcher(`(?m)^version\s*=\s*['"](%s)['"]$`, 1),
+	"pom.xml":          unmarshalXMLVersion,
+	"package.json":     unmarshalJSONVersion,
+	"setup.cfg":        versionMatcher(`(?m)^version\s*=\s*(%s)$`, 1),
+	"setup.py":         versionMatcher(`(?ms)setup\(.*\s+version\s*=\s*['"](%s)['"].*\)$`, 1),
+	"CMakeLists.txt":   versionMatcher(`(?ms)^project\s*\(.*\s+VERSION\s+(%s).*\)$`, 1),
+	"Makefile":         versionMatcher(`(?m)^VERSION\s*:=\s*(%s)$`, 1),
+}
+
+func versionMatcher(regexf string, group int) findVersion {
+	return func(file []byte) (string, error) {
+		regex := fmt.Sprintf(regexf, versionRegex)
+		return matchVersion(file, regex, group)
+	}
+}
+
+func matchVersion(data []byte, regex string, group int) (string, error) {
+	re := regexp.MustCompile(regex)
+	matched := re.FindSubmatch(data)
+	if len(matched) > 0 {
+		version := strings.TrimSpace(string(matched[group]))
+		return version, nil
+	}
+	return "0.0.0", errors.New("No version found")
+}
+
+func unmarshalJSONVersion(data []byte) (string, error) {
+	var project struct {
+		Version string `json:"version"`
+	}
+	json.Unmarshal(data, &project)
+	if project.Version != "" {
+		return project.Version, nil
+	}
+	return "0.0.0", errors.New("No version found")
+}
+
+func unmarshalXMLVersion(data []byte) (string, error) {
+	var project struct {
+		Version string `xml:"version"`
+	}
+	xml.Unmarshal(data, &project)
+	if project.Version != "" {
+		return project.Version, nil
+	}
+	return "0.0.0", errors.New("No version found")
+}
+
+// MajorMinorEqual returns true if v1 and v2 share the same major and minor version numbers; false otherwise.
+func MajorMinorEqual(v1, v2 *semver.Version) bool {
+	return v1.Major == v2.Major && v1.Minor == v2.Minor
+}
 
 // NewRelVer is the release version config.
 type NewRelVer struct {
@@ -28,6 +93,12 @@ func NewSemVer(v string) (*semver.Version, error) {
 	return semver.NewVersion(ver.String())
 }
 
+// GetNewVersion returns an incremented version number based on the current latest version.
+//
+// E.g.
+// - If the latest version is 1.2.0 then 1.2.1 will be returned (or 1.3.0 if NewRelVer.minor is set to true).
+// - If a project has no previous versions but has set a base version of 1.0, then 1.0.0 is returned.
+// - For projects that have no previous versions or base version, then 0.0.1 is returned (or 0.1.0 if NewRelVer.minor is set to true).
 func (r NewRelVer) GetNewVersion(gitClient GitClient) (*semver.Version, error) {
 	newVersion, baseVersion, err := r.GetLatestVersion(gitClient)
 	if err != nil {
@@ -52,7 +123,16 @@ func (r NewRelVer) GetNewVersion(gitClient GitClient) (*semver.Version, error) {
 	return newVersion, nil
 }
 
-func (r NewRelVer) GetLatestVersion(gitClient GitClient) (*semver.Version, *semver.Version, error) {
+// GetLatestVersion returns the project's latest known version and base version.
+// The latest version is found by looking at the project's base version and git tags and returning the highest version number from those.
+//
+// E.g.
+// - If the base version is 1.0 and the highest git tag is 1.1.0, then 1.1.0 will be returned.
+// - Vice versa, if the base version is 1.2 and the highest git tag is 1.1.0, then 1.2.0 will be returned.
+// - If there are no git tags and no base version, then 0.0.0 will be returned.
+//
+// Note the base version is always returned (even if it is 0.0.0) unless there is an error.
+func (r NewRelVer) GetLatestVersion(gitClient GitClient) (latest, base *semver.Version, err error) {
 	baseVersion, err := r.GetBaseVersion()
 	if err != nil {
 		return nil, nil, err
@@ -96,10 +176,16 @@ func (r NewRelVer) GetLatestVersion(gitClient GitClient) (*semver.Version, *semv
 	return latestVersion, baseVersion, nil
 }
 
-func MajorMinorEqual(v1, v2 *semver.Version) bool {
-	return v1.Major == v2.Major && v1.Minor == v2.Minor
-}
-
+// GetBaseVersion returns the project's base version.
+// The base version is found by searching a known set of project config files for a known version identifier.
+//
+// E.g.
+// - If the project config file sets a version 1.0, then 1.0.0 is returned.
+// - If no project config file is found then 0.0.0 is returned.
+// - If NewRelVer.baseVersion is set, then that version is returned.
+//
+// WARNING: GetBaseVersion does not search for project config files in a deterministic order, so if you have more than one supported project config file in your
+// repo, make sure only one has a version identifier.
 func (r NewRelVer) GetBaseVersion() (*semver.Version, error) {
 	if r.baseVersion != "" {
 		return NewSemVer(r.baseVersion)
@@ -119,6 +205,7 @@ func (r NewRelVer) GetBaseVersion() (*semver.Version, error) {
 	return &semver.Version{}, nil
 }
 
+// FindVersionFile returns the contents of the given file from NewRelVer.dir directory.
 func (r NewRelVer) FindVersionFile(f string) ([]byte, error) {
 	data, err := ioutil.ReadFile(filepath.Join(r.dir, f))
 	if err == nil && r.debug {

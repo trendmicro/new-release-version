@@ -1,14 +1,9 @@
 package main
 
 import (
-	"encoding/json"
-	"encoding/xml"
-	"errors"
 	"flag"
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 )
 
 // These are set by goreleaser during release.
@@ -72,58 +67,4 @@ func main() {
 		os.Exit(-1)
 	}
 	fmt.Print(v.String())
-}
-
-type findVersion func([]byte) (string, error)
-
-const versionRegex = `[\.\d]+(-\w+)?`
-
-var versionFiles = map[string]findVersion{
-	"versions.gradle":  versionMatcher(fmt.Sprintf(`(?m)project\.version\s*=\s*['"](%s)['"]$`, versionRegex), 1),
-	"build.gradle":     versionMatcher(fmt.Sprintf(`(?m)^version\s*=\s*['"](%s)['"]$`, versionRegex), 1),
-	"build.gradle.kts": versionMatcher(fmt.Sprintf(`(?m)^version\s*=\s*['"](%s)['"]$`, versionRegex), 1),
-	"pom.xml":          unmarshalXMLVersion,
-	"package.json":     unmarshalJSONVersion,
-	"setup.cfg":        versionMatcher(fmt.Sprintf(`(?m)^version\s*=\s*(%s)$`, versionRegex), 1),
-	"setup.py":         versionMatcher(fmt.Sprintf(`(?ms)setup\(.*\s+version\s*=\s*['"](%s)['"].*\)$`, versionRegex), 1),
-	"CMakeLists.txt":   versionMatcher(fmt.Sprintf(`(?ms)^project\s*\(.*\s+VERSION\s+(%s).*\)$`, versionRegex), 1),
-	"Makefile":         versionMatcher(fmt.Sprintf(`(?m)^VERSION\s*:=\s*(%s)$`, versionRegex), 1),
-}
-
-func versionMatcher(regex string, group int) findVersion {
-	return func(file []byte) (string, error) {
-		return matchVersion(file, regex, group)
-	}
-}
-
-func matchVersion(data []byte, regex string, group int) (string, error) {
-	re := regexp.MustCompile(regex)
-	matched := re.FindSubmatch(data)
-	if len(matched) > 0 {
-		version := strings.TrimSpace(string(matched[group]))
-		return version, nil
-	}
-	return "0.0.0", errors.New("No version found")
-}
-
-func unmarshalJSONVersion(data []byte) (string, error) {
-	var project struct {
-		Version string `json:"version"`
-	}
-	json.Unmarshal(data, &project)
-	if project.Version != "" {
-		return project.Version, nil
-	}
-	return "0.0.0", errors.New("No version found")
-}
-
-func unmarshalXMLVersion(data []byte) (string, error) {
-	var project struct {
-		Version string `xml:"version"`
-	}
-	xml.Unmarshal(data, &project)
-	if project.Version != "" {
-		return project.Version, nil
-	}
-	return "0.0.0", errors.New("No version found")
 }
