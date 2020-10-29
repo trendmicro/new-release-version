@@ -3,6 +3,7 @@
 Forked from https://github.com/jenkins-x-plugins/jx-release-version
 
 ![Build](https://github.com/trendmicro/new-release-version/workflows/Build/badge.svg)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/trendmicro/new-release-version/)](https://pkg.go.dev/github.com/trendmicro/new-release-version/)
 
 Returns a new release version based on previous git tags that can be used in a new release.
 
