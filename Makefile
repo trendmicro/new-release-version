@@ -1,6 +1,6 @@
 NAME := new-release-version
 ORG := trendmicro
-VERSION := 2.2
+VERSION := 1.0
 
 all: build test
 

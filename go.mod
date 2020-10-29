@@ -1,4 +1,4 @@
-module github.com/trendmicro/new-release-version/v2
+module github.com/trendmicro/new-release-version
 
 go 1.15
 
