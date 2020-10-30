@@ -1,3 +1,10 @@
+/*
+new-release-version is a simple command that will print a new patch (or minor) version of a release.
+
+This helps in continuous delivery if you want an automatic release when a change is merged to your main branch.  Traditional approaches mean the version is
+stored in a file that is checked and updated after each release.  If you want automatic releases this means you will get another release triggered from the
+version update resulting in a cyclic release sitiation.
+*/
 package main
 
 import (
@@ -43,19 +50,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	r := NewRelVer{
-		dir:         *dir,
-		baseVersion: *baseVersion,
-		sameRelease: *sameRelease,
-		minor:       *minor,
-		debug:       *debug,
-	}
-
 	var gitClient GitClient
 	if *owner != "" && *repo != "" {
-		gitClient = NewGitHubClient(*owner, *repo, r.debug)
+		gitClient = NewGitHubClient(*owner, *repo, *debug)
 	} else {
-		gitClient = NewLocalGitClient(r.dir, *fetch, r.debug)
+		gitClient = NewLocalGitClient(*dir, *fetch, *debug)
+	}
+
+	r := NewRelVer{
+		Dir:         *dir,
+		BaseVersion: *baseVersion,
+		SameRelease: *sameRelease,
+		Minor:       *minor,
+		Debug:       *debug,
 	}
 
 	v, err := r.GetNewVersion(gitClient)

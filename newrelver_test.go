@@ -100,7 +100,7 @@ func TestMajorMinorNotEqual(t *testing.T) {
 
 func TestGetLatestVersion(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples",
+		Dir: "examples",
 	}
 
 	mockClient := &GitClientMock{}
@@ -115,7 +115,7 @@ func TestGetLatestVersion(t *testing.T) {
 
 func TestGetLatestVersionNoTags(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples",
+		Dir: "examples",
 	}
 
 	mockClient := &GitClientMock{}
@@ -130,8 +130,8 @@ func TestGetLatestVersionNoTags(t *testing.T) {
 
 func TestGetLatestVersionInitBase(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "1.0",
+		Dir:         "examples",
+		BaseVersion: "1.0",
 	}
 
 	mockClient := &GitClientMock{}
@@ -147,14 +147,14 @@ func TestGetLatestVersionInitBase(t *testing.T) {
 // The latest tag in GitHub and locally should be equal, granted the user hasn't added a new tag.
 func TestGetLatestVersionGitHub(t *testing.T) {
 	r := NewRelVer{
-		dir: ".",
+		Dir: ".",
 	}
 
-	gitHubClient := NewGitHubClient("trendmicro", "new-release-version", r.debug)
+	gitHubClient := NewGitHubClient("trendmicro", "new-release-version", r.Debug)
 	ghv, ghb, err := r.GetLatestVersion(gitHubClient)
 	assert.NoError(t, err)
 
-	localGitClient := NewLocalGitClient(".", true /*fetch*/, r.debug)
+	localGitClient := NewLocalGitClient(".", true /*fetch*/, r.Debug)
 	v, b, err := r.GetLatestVersion(localGitClient)
 	assert.NoError(t, err)
 
@@ -164,7 +164,7 @@ func TestGetLatestVersionGitHub(t *testing.T) {
 
 func TestGetNewVersion(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples",
+		Dir: "examples",
 	}
 
 	mockClient := &GitClientMock{}
@@ -178,7 +178,7 @@ func TestGetNewVersion(t *testing.T) {
 
 func TestGetNewVersionNoTags(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples",
+		Dir: "examples",
 	}
 
 	mockClient := &GitClientMock{}
@@ -192,8 +192,8 @@ func TestGetNewVersionNoTags(t *testing.T) {
 
 func TestGetNewVersionInitBaseVersion(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "1.0",
+		Dir:         "examples",
+		BaseVersion: "1.0",
 	}
 
 	mockClient := &GitClientMock{}
@@ -207,8 +207,8 @@ func TestGetNewVersionInitBaseVersion(t *testing.T) {
 
 func TestGetNewVersionBumpBaseVersion(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "100.0.0",
+		Dir:         "examples",
+		BaseVersion: "100.0.0",
 	}
 
 	mockClient := &GitClientMock{}
@@ -222,9 +222,9 @@ func TestGetNewVersionBumpBaseVersion(t *testing.T) {
 
 func TestGetNewVersionSameRelease(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "1.0",
-		sameRelease: true,
+		Dir:         "examples",
+		BaseVersion: "1.0",
+		SameRelease: true,
 	}
 
 	mockClient := &GitClientMock{}
@@ -238,8 +238,8 @@ func TestGetNewVersionSameRelease(t *testing.T) {
 
 func TestGetNewMinorVersion(t *testing.T) {
 	r := NewRelVer{
-		dir:   "examples",
-		minor: true,
+		Dir:   "examples",
+		Minor: true,
 	}
 
 	mockClient := &GitClientMock{}
@@ -253,8 +253,8 @@ func TestGetNewMinorVersion(t *testing.T) {
 
 func TestGetNewMinorVersionNoTags(t *testing.T) {
 	r := NewRelVer{
-		dir:   "examples",
-		minor: true,
+		Dir:   "examples",
+		Minor: true,
 	}
 
 	mockClient := &GitClientMock{}
@@ -268,9 +268,9 @@ func TestGetNewMinorVersionNoTags(t *testing.T) {
 
 func TestGetNewMinorVersionInitBase(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "100.0.0",
-		minor:       true,
+		Dir:         "examples",
+		BaseVersion: "100.0.0",
+		Minor:       true,
 	}
 
 	mockClient := &GitClientMock{}
@@ -284,9 +284,9 @@ func TestGetNewMinorVersionInitBase(t *testing.T) {
 
 func TestGetNewMinorVersionBumpBase(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "100.0.0",
-		minor:       true,
+		Dir:         "examples",
+		BaseVersion: "100.0.0",
+		Minor:       true,
 	}
 
 	mockClient := &GitClientMock{}
@@ -300,10 +300,10 @@ func TestGetNewMinorVersionBumpBase(t *testing.T) {
 
 func TestGetNewMinorVersionSameRelease(t *testing.T) {
 	r := NewRelVer{
-		dir:         "examples",
-		baseVersion: "1.0.0",
-		sameRelease: true,
-		minor:       true,
+		Dir:         "examples",
+		BaseVersion: "1.0.0",
+		SameRelease: true,
+		Minor:       true,
 	}
 
 	mockClient := &GitClientMock{}
@@ -317,7 +317,7 @@ func TestGetNewMinorVersionSameRelease(t *testing.T) {
 
 func TestGetBaseVersionNoVersionFile(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples",
+		Dir: "examples",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -328,7 +328,7 @@ func TestGetBaseVersionNoVersionFile(t *testing.T) {
 
 func TestVersionsGradle(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/java/versions.gradle",
+		Dir: "examples/java/versions.gradle",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -339,7 +339,7 @@ func TestVersionsGradle(t *testing.T) {
 
 func TestBuildGradle(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/java/build.gradle",
+		Dir: "examples/java/build.gradle",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -350,7 +350,7 @@ func TestBuildGradle(t *testing.T) {
 
 func TestPomXML(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/java/pom.xml",
+		Dir: "examples/java/pom.xml",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -361,7 +361,7 @@ func TestPomXML(t *testing.T) {
 
 func TestBuildGradleKTS(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/kotlin",
+		Dir: "examples/kotlin",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -372,7 +372,7 @@ func TestBuildGradleKTS(t *testing.T) {
 
 func TestPackageJSON(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/nodejs",
+		Dir: "examples/nodejs",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -383,7 +383,7 @@ func TestPackageJSON(t *testing.T) {
 
 func TestSetupCfg(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/python/setup.cfg",
+		Dir: "examples/python/setup.cfg",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -394,7 +394,7 @@ func TestSetupCfg(t *testing.T) {
 
 func TestSetupPy(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/python/setup.py",
+		Dir: "examples/python/setup.py",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -405,7 +405,7 @@ func TestSetupPy(t *testing.T) {
 
 func TestSetupPyNested(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/python/setup.py/nested",
+		Dir: "examples/python/setup.py/nested",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -416,7 +416,7 @@ func TestSetupPyNested(t *testing.T) {
 
 func TestSetupPyOneLine(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/python/setup.py/one_line",
+		Dir: "examples/python/setup.py/one_line",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -427,7 +427,7 @@ func TestSetupPyOneLine(t *testing.T) {
 
 func TestMakefile(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/make",
+		Dir: "examples/make",
 	}
 
 	v, err := r.GetBaseVersion()
@@ -438,7 +438,7 @@ func TestMakefile(t *testing.T) {
 
 func TestCMakefile(t *testing.T) {
 	r := NewRelVer{
-		dir: "examples/cmake",
+		Dir: "examples/cmake",
 	}
 
 	v, err := r.GetBaseVersion()

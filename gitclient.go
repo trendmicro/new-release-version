@@ -12,10 +12,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// GitClient is an interface to return a list of Git tags.
 type GitClient interface {
 	ListTags() ([]string, error)
 }
 
+// GitHubClient is a GitClient that can return a list of tags from github.com for a repo.
 type GitHubClient struct {
 	client *github.Client
 	owner  string
@@ -23,6 +25,7 @@ type GitHubClient struct {
 	debug  bool
 }
 
+// NewGitHubClient returns a new GitHubClient.
 func NewGitHubClient(owner, repo string, debug bool) GitClient {
 	var oauth2Client *http.Client
 
@@ -44,6 +47,7 @@ func NewGitHubClient(owner, repo string, debug bool) GitClient {
 	}
 }
 
+// ListTags returns a list of tags from github.com for a repo.
 func (g *GitHubClient) ListTags() ([]string, error) {
 	if g.debug {
 		fmt.Printf("Get tags from github.com/%s/%s\n", g.owner, g.repo)
@@ -61,12 +65,14 @@ func (g *GitHubClient) ListTags() ([]string, error) {
 	return rv, err
 }
 
+// LocalGitClient is a GitClient that can return a list of tags from a local Git repo.
 type LocalGitClient struct {
 	dir   string
 	fetch bool
 	debug bool
 }
 
+// NewLocalGitClient returns a new LocalGitClient.
 func NewLocalGitClient(dir string, fetch, debug bool) GitClient {
 	return &LocalGitClient{
 		dir:   dir,
@@ -75,6 +81,7 @@ func NewLocalGitClient(dir string, fetch, debug bool) GitClient {
 	}
 }
 
+// ListTags returns a list of tags from a local Git repo.
 func (g *LocalGitClient) ListTags() ([]string, error) {
 	if g.debug {
 		fmt.Printf("Get tags from local repo %s\n", g.dir)
