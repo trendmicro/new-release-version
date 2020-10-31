@@ -32,10 +32,3 @@ jobs:
 
     - name: Test
       run: make test
-
-    - name: Tag
-      if: github.ref == 'refs/heads/main'
-      run: |
-        go get github.com/trendmicro/new-release-version
-        git tag -f "v$(new-release-version)"
-        git push --tags
