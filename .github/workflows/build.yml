@@ -7,9 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-
   build:
-    name: Build
     runs-on: ubuntu-latest
     steps:
 
@@ -18,7 +16,7 @@ jobs:
       with:
         go-version: ^1.15
 
-    - name: Check out code into the Go module directory
+    - name: Checkout
       uses: actions/checkout@v2
 
     - name: Get dependencies
@@ -34,3 +32,10 @@ jobs:
 
     - name: Test
       run: make test
+
+    - name: Tag
+      if: github.ref == 'refs/heads/main'
+      run: |
+        go get github.com/trendmicro/new-release-version
+        git tag -f "v$(new-release-version)"
+        git push --tags
