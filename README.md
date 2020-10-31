@@ -5,9 +5,9 @@ Forked from https://github.com/jenkins-x-plugins/jx-release-version
 ![Build](https://github.com/trendmicro/new-release-version/workflows/Build/badge.svg)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/trendmicro/new-release-version/)](https://pkg.go.dev/github.com/trendmicro/new-release-version/)
 
-new-release-version is a simple command that will print a new patch (or minor) version of a release.
+`new-release-version` is a simple command that will print a new patch (or minor) version of a release.
 
-This helps in continuous delivery if you want an automatic release when a change is merged to your main branch.  Traditional approaches mean the version is stored in a file that is checked and updated after each release.  If you want automatic releases this means you will get another release triggered from the version update resulting in a cyclic release sitiation.  
+This helps in continuous delivery if you want an automatic release when a change is merged to your main branch.  Traditional approaches mean the version is stored in a file that is checked and updated after each release.  If you want automatic releases this means you will get another release triggered from the version update resulting in a cyclic release situation.  
 
 Using a git tag to work out the next release version is better than traditional approaches of storing it in a VERSION file or updating a project's config file.
 
