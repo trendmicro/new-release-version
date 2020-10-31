@@ -18,6 +18,7 @@ import (
 const VersionNumberRegex = `[\.\d]+(-\w+)?`
 
 // Version identifier regex strings for version files.
+//
 // The %s is replaced with VersionNumberRegex.
 const (
 	VersionsGradleRegexf = `(?m)project\.version\s*=\s*['"](%s)['"]$`
