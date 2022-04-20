@@ -1,23 +1,43 @@
 # New Release Version
 
-Forked from https://github.com/jenkins-x-plugins/jx-release-version
+Forked from <https://github.com/jenkins-x-plugins/jx-release-version>
 
 ![Build](https://github.com/trendmicro/new-release-version/workflows/Build/badge.svg)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/trendmicro/new-release-version/)](https://pkg.go.dev/github.com/trendmicro/new-release-version/)
 
-`new-release-version` is a simple command that will print a new patch (or minor) version of a release.
+`new-release-version` is a simple command that will print a new patch (or minor) version for a release.
 
 This helps in continuous delivery if you want an automatic release when a change is merged to your main branch.  Traditional approaches mean the version is stored in a file that is checked and updated after each release.  If you want automatic releases this means you will get another release triggered from the version update resulting in a cyclic release situation.  
 
 Using a git tag to work out the next release version is better than traditional approaches of storing it in a VERSION file or updating a project's config file.
 
-The major and minor version of the release is determined by searching for a version identifier in a project config file, like package.json or build.gradle.
-See [examples](examples) for examples of supported version files.
+The major and minor version of the release is determined by searching for a version identifier in a project config file, like `package.json` or `build.gradle.` See [examples](examples) for supported version files.
 
-If you need to bump the major or minor version of your project, simply increment the version in your project's config file and commit that to your main branch.
-You can also use the `-base-version` option to set a base version.
+When you need to bump the major or minor version of your project, simply increment the version in your project's config file and commit that to your main branch.
 
-See `new-release-version -help` or the [go docs](https://pkg.go.dev/github.com/trendmicro/new-release-version/) for more information.
+`new-release-version -help`:
+
+```
+Usage of ./new-release-version:
+  -base-version string
+        Version to use instead of version file.
+  -debug
+        Prints debug into to console.
+  -directory string
+        Directory of git project. (default ".")
+  -gh-owner string
+        GitHub repository owner to fetch tags from instead of the local git repo.
+  -gh-repository string
+        GitHub repository to fetch tags from instead of the local git repo.
+  -git-fetch
+        Fetch tags from remote. (default true)
+  -minor
+        Increment minor version instead of patch.
+  -same-release
+        Increment the latest base version release ignoring any releases higher than the base version release.
+  -version
+        Prints the version.
+```
 
 ## Install
 
