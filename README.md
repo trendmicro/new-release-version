@@ -70,7 +70,7 @@ Or install a specific version from [releases](https://github.com/trendmicro/new-
 
 ### Prereqs
 
-- [Go 1.15+](https://go.dev/)
+- [Go](https://go.dev/)
 - [Git](https://git-scm.com/)
 
 ### Build
