@@ -2,7 +2,6 @@
 
 Forked from <https://github.com/jenkins-x-plugins/jx-release-version>
 
-![Build](https://github.com/trendmicro/new-release-version/workflows/Build/badge.svg)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/trendmicro/new-release-version/)](https://pkg.go.dev/github.com/trendmicro/new-release-version/)
 
 `new-release-version` is a simple command that will print a new patch (or minor) version for a release.
