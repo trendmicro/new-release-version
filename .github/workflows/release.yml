@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: go1.18 #main
+    branches: main
     paths:
       - '**.go'
       - 'go.*'
@@ -27,4 +27,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        args: release --rm-dist --skip-publish
+        args: release --rm-dist
