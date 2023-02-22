@@ -337,6 +337,17 @@ func TestVersionsGradle(t *testing.T) {
 	assert.Equal(t, "1.2.3", v.String())
 }
 
+func TestGradleProperties(t *testing.T) {
+	r := NewRelVer{
+		Dir: "examples/java/gradle.properties",
+	}
+
+	v, err := r.GetBaseVersion()
+	assert.NoError(t, err)
+
+	assert.Equal(t, "1.3.2", v.String())
+}
+
 func TestBuildGradle(t *testing.T) {
 	r := NewRelVer{
 		Dir: "examples/java/build.gradle",

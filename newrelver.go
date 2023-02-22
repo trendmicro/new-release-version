@@ -21,9 +21,9 @@ const VersionNumberRegex = `[\.\d]+(-\w+)?`
 //
 // The %s is replaced with VersionNumberRegex.
 const (
-	VersionsGradleRegexf = `(?m)project\.version\s*=\s*['"](%s)['"]$`
+	ConfigRegexf         = `(?m)^version\s*=\s*(%s)$`
 	BuildGradleRegexf    = `(?m)^version\s*=\s*['"](%s)['"]$`
-	SetupCfgRegexf       = `(?m)^version\s*=\s*(%s)$`
+	VersionsGradleRegexf = `(?m)project\.version\s*=\s*['"](%s)['"]$`
 	SetupPyRegexf        = `(?ms)setup\(.*\s+version\s*=\s*['"](%s)['"].*\)$`
 	CMakeListsTxtRegexf  = `(?ms)^project\s*\(.*\s+VERSION\s+(%s).*\)$`
 	MakefileRegexf       = `(?m)^VERSION\s*:=\s*(%s)$`
@@ -32,15 +32,16 @@ const (
 type findVersion func([]byte) (string, error)
 
 var versionFiles = map[string]findVersion{
-	"versions.gradle":  versionMatcher(VersionsGradleRegexf, 1),
-	"build.gradle":     versionMatcher(BuildGradleRegexf, 1),
-	"build.gradle.kts": versionMatcher(BuildGradleRegexf, 1),
-	"pom.xml":          unmarshalXMLVersion,
-	"package.json":     unmarshalJSONVersion,
-	"setup.cfg":        versionMatcher(SetupCfgRegexf, 1),
-	"setup.py":         versionMatcher(SetupPyRegexf, 1),
-	"CMakeLists.txt":   versionMatcher(CMakeListsTxtRegexf, 1),
-	"Makefile":         versionMatcher(MakefileRegexf, 1),
+	"gradle.properties": versionMatcher(ConfigRegexf, 1),
+	"build.gradle":      versionMatcher(BuildGradleRegexf, 1),
+	"build.gradle.kts":  versionMatcher(BuildGradleRegexf, 1),
+	"versions.gradle":   versionMatcher(VersionsGradleRegexf, 1),
+	"pom.xml":           unmarshalXMLVersion,
+	"package.json":      unmarshalJSONVersion,
+	"setup.cfg":         versionMatcher(ConfigRegexf, 1),
+	"setup.py":          versionMatcher(SetupPyRegexf, 1),
+	"CMakeLists.txt":    versionMatcher(CMakeListsTxtRegexf, 1),
+	"Makefile":          versionMatcher(MakefileRegexf, 1),
 }
 
 func versionMatcher(regexf string, group int) findVersion {
